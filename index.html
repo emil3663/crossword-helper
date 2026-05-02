@@ -31,11 +31,31 @@
   <section id="tab-pattern" class="tab-content active">
     <div class="panel">
       <h2>Pattern Word Search</h2>
-      <p class="hint">Use <code>?</code> for unknown letters and <code>*</code> for any sequence. E.g. <code>c?t</code>
-        → cat, cot, cut</p>
+      <p class="hint">Fill in the letters you know. Empty blocks are wildcards. Set the word length below.</p>
+      <div class="length-row">
+        <label for="patternLenSelect">Word length:</label>
+        <select id="patternLenSelect">
+          <option value="1">1</option>
+          <option value="2">2</option>
+          <option value="3">3</option>
+          <option value="4">4</option>
+          <option value="5" selected>5</option>
+          <option value="6">6</option>
+          <option value="7">7</option>
+          <option value="8">8</option>
+          <option value="9">9</option>
+          <option value="10">10</option>
+          <option value="11">11</option>
+          <option value="12">12</option>
+          <option value="13">13</option>
+          <option value="14">14</option>
+          <option value="15">15</option>
+          <option value="custom">Custom (&gt;15)…</option>
+        </select>
+        <input type="number" id="patternLenCustom" placeholder="Enter length" min="16" max="50" style="display:none" />
+      </div>
+      <div class="letter-blocks" id="patternBlocks"></div>
       <div class="search-row">
-        <input type="text" id="patternInput" placeholder="e.g. ?r??d or c*e" />
-        <input type="number" id="patternLen" placeholder="Length (opt)" min="1" max="30" />
         <button id="patternSearch" class="btn-primary">Search</button>
       </div>
       <div id="patternResults" class="results-area"></div>
@@ -64,9 +84,32 @@
   <section id="tab-anagram" class="tab-content">
     <div class="panel">
       <h2>Anagram Solver</h2>
-      <p class="hint">Enter scrambled letters to find all anagrams and sub-anagrams.</p>
+      <p class="hint">Enter your letters one per block. Leave a block empty for a wildcard (any letter). Sub-anagrams
+        are shown when no wildcards are used.</p>
+      <div class="length-row">
+        <label for="anagramLenSelect">Word length:</label>
+        <select id="anagramLenSelect">
+          <option value="1">1</option>
+          <option value="2">2</option>
+          <option value="3">3</option>
+          <option value="4">4</option>
+          <option value="5" selected>5</option>
+          <option value="6">6</option>
+          <option value="7">7</option>
+          <option value="8">8</option>
+          <option value="9">9</option>
+          <option value="10">10</option>
+          <option value="11">11</option>
+          <option value="12">12</option>
+          <option value="13">13</option>
+          <option value="14">14</option>
+          <option value="15">15</option>
+          <option value="custom">Custom (&gt;15)…</option>
+        </select>
+        <input type="number" id="anagramLenCustom" placeholder="Enter length" min="16" max="50" style="display:none" />
+      </div>
+      <div class="letter-blocks" id="anagramBlocks"></div>
       <div class="search-row">
-        <input type="text" id="anagramInput" placeholder="e.g. listen" maxlength="15" />
         <button id="anagramSolve" class="btn-primary">Solve</button>
       </div>
       <div id="anagramResults" class="results-area"></div>

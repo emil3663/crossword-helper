@@ -19,41 +19,94 @@ function spinner() {
   return '<div class="spinner-wrap"><div class="spinner"></div><span>Searching…</span></div>';
 }
 
+/* ── Letter block utilities ── */
+function buildLetterBlocks(containerId, count, onEnter) {
+  const container = document.getElementById(containerId);
+  container.innerHTML = '';
+  for (let i = 0; i < count; i++) {
+    const inp = document.createElement('input');
+    inp.type = 'text';
+    inp.maxLength = 1;
+    inp.className = 'letter-block';
+    inp.setAttribute('autocomplete', 'off');
+    inp.setAttribute('autocorrect', 'off');
+    inp.setAttribute('autocapitalize', 'characters');
+    inp.setAttribute('spellcheck', 'false');
+    inp.setAttribute('inputmode', 'text');
+    inp.addEventListener('input', () => {
+      const v = inp.value.replace(/[^a-zA-Z]/g, '');
+      inp.value = v ? v[v.length - 1].toUpperCase() : '';
+      if (inp.value && i < count - 1) container.children[i + 1].focus();
+    });
+    inp.addEventListener('keydown', e => {
+      if (e.key === 'Backspace' && !inp.value && i > 0) {
+        const prev = container.children[i - 1];
+        prev.value = '';
+        prev.focus();
+        e.preventDefault();
+      } else if (e.key === 'ArrowLeft' && i > 0) { container.children[i - 1].focus(); e.preventDefault(); }
+      else if (e.key === 'ArrowRight' && i < count - 1) { container.children[i + 1].focus(); e.preventDefault(); }
+      else if (e.key === 'Enter' && onEnter) { onEnter(); }
+    });
+    container.appendChild(inp);
+  }
+}
+
+function getBlockValues(containerId) {
+  return Array.from(document.getElementById(containerId).children)
+    .map(inp => inp.value.trim().toLowerCase() || '?');
+}
+
+function initLengthSelector(selectId, customId, blocksId, onEnter) {
+  const sel = document.getElementById(selectId);
+  const custom = document.getElementById(customId);
+  buildLetterBlocks(blocksId, parseInt(sel.value), onEnter);
+  sel.addEventListener('change', () => {
+    if (sel.value === 'custom') {
+      custom.style.display = '';
+      custom.focus();
+    } else {
+      custom.style.display = 'none';
+      buildLetterBlocks(blocksId, parseInt(sel.value), onEnter);
+    }
+  });
+  const applyCustom = () => {
+    const n = Math.max(1, Math.min(50, parseInt(custom.value) || 5));
+    buildLetterBlocks(blocksId, n, onEnter);
+  };
+  custom.addEventListener('change', applyCustom);
+  custom.addEventListener('keydown', e => { if (e.key === 'Enter') applyCustom(); });
+}
+
 /* ======================================
    1. PATTERN SEARCH  (Datamuse API)
    ====================================== */
 
 document.getElementById('patternSearch').addEventListener('click', runPatternSearch);
-document.getElementById('patternInput').addEventListener('keydown', e => { if (e.key === 'Enter') runPatternSearch(); });
 
 async function runPatternSearch() {
-  const raw = document.getElementById('patternInput').value.trim();
-  const len = parseInt(document.getElementById('patternLen').value) || null;
+  const values = getBlockValues('patternBlocks');
+  const pattern = values.join('');                      // empty block → '?'
+  const len = values.length;
   const out = document.getElementById('patternResults');
 
-  if (!raw) { out.innerHTML = '<p class="no-results">Enter a pattern first.</p>'; return; }
+  if (values.every(v => v === '?')) {
+    out.innerHTML = '<p class="no-results">Fill in at least one letter before searching.</p>';
+    return;
+  }
 
-  // Convert ?/_ to single wildcard char, * to multi
-  // Datamuse uses ? for single and * for multi
-  const pattern = raw.replace(/_/g, '?');
   out.innerHTML = spinner();
-
   try {
-    // sp= for spelling pattern
     const url = `https://api.datamuse.com/words?sp=${encodeURIComponent(pattern)}&max=100`;
     const res = await fetch(url);
     const data = await res.json();
-
-    let words = data.map(d => d.word);
-    if (len) words = words.filter(w => w.length === len);
-
-    if (words.length === 0) {
-      out.innerHTML = '<p class="no-results">No words found for that pattern. Try a different pattern.</p>';
+    const words = data.map(d => d.word).filter(w => w.length === len);
+    if (!words.length) {
+      out.innerHTML = '<p class="no-results">No words found. Try clearing some letters.</p>';
       return;
     }
-
     out.innerHTML = `
-      <p class="result-header">${words.length} word${words.length !== 1 ? 's' : ''} found for pattern <code>${escHtml(raw)}</code>${len ? ` (${len} letters)` : ''}:</p>
+      <p class="result-header">${words.length} word${words.length !== 1 ? 's' : ''} found for <code>${escHtml(pattern.toUpperCase())}</code>:</p>
       <div class="word-grid">${words.map(w =>
       `<span class="word-chip" onclick="lookupWord('${escHtml(w)}')">${escHtml(w)}</span>`
     ).join('')}</div>`;
@@ -207,7 +260,6 @@ async function fetchPatternWords(pattern, len, targetId) {
    ====================================== */
 
 document.getElementById('anagramSolve').addEventListener('click', solveAnagram);
-document.getElementById('anagramInput').addEventListener('keydown', e => { if (e.key === 'Enter') solveAnagram(); });
 
 // Word list for anagram solving — fetched once from a public Scrabble dictionary and
 // cached in sessionStorage so subsequent searches are instant.
@@ -225,34 +277,46 @@ async function loadWordList() {
 }
 
 async function solveAnagram() {
-  const letters = document.getElementById('anagramInput').value.trim().toLowerCase().replace(/[^a-z]/g, '');
+  const values = getBlockValues('anagramBlocks');
+  const totalLen = values.length;
+  const knownLetters = values.filter(v => v !== '?');
+  const wildcardCount = values.filter(v => v === '?').length;
   const out = document.getElementById('anagramResults');
-  if (!letters) { out.innerHTML = '<p class="no-results">Enter letters to solve.</p>'; return; }
-  if (letters.length > 15) { out.innerHTML = '<p class="no-results">Max 15 letters supported.</p>'; return; }
+
+  if (knownLetters.length === 0) {
+    out.innerHTML = '<p class="no-results">Enter at least one letter to solve.</p>';
+    return;
+  }
 
   out.innerHTML = spinner();
-  const sorted = letters.split('').sort().join('');
-  const minLen = Math.min(3, letters.length);
-
   try {
     const wordList = await loadWordList();
 
-    // Full anagrams: same length, same sorted letters
-    const anagrams = wordList.filter(w =>
-      w.length === letters.length && w.split('').sort().join('') === sorted
-    );
+    // Full anagrams: same length, known letters must all appear, wildcards fill the rest
+    const anagrams = wordList.filter(w => {
+      if (w.length !== totalLen) return false;
+      const pool = [...knownLetters];
+      let wildsUsed = 0;
+      for (const c of w) {
+        const idx = pool.indexOf(c);
+        if (idx !== -1) pool.splice(idx, 1);
+        else wildsUsed++;
+      }
+      return wildsUsed <= wildcardCount;
+    });
 
-    // Sub-anagrams: shorter words whose letters are all available in the input pool
-    const subWords = wordList.filter(w => {
-      if (w.length >= letters.length || w.length < minLen) return false;
-      const pool = letters.split('');
+    // Sub-anagrams: only when no wildcards (wildcards make it too broad)
+    const minLen = Math.min(3, knownLetters.length);
+    const subWords = wildcardCount === 0 ? wordList.filter(w => {
+      if (w.length >= totalLen || w.length < minLen) return false;
+      const pool = [...knownLetters];
       return w.split('').every(c => {
         const idx = pool.indexOf(c);
         if (idx === -1) return false;
         pool.splice(idx, 1);
         return true;
       });
-    });
+    }) : [];
 
     let html = '';
     if (anagrams.length) {
@@ -324,3 +388,7 @@ function renderDefinitions(entries) {
   });
   return html;
 }
+
+/* ── Initialise letter-block inputs ── */
+initLengthSelector('patternLenSelect', 'patternLenCustom', 'patternBlocks', runPatternSearch);
+initLengthSelector('anagramLenSelect', 'anagramLenCustom', 'anagramBlocks', solveAnagram);
