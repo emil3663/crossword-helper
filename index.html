@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Crossword Helper</title>
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+  <nav class="topbar">
+    <a href="../index.html" class="back">← Hub</a>
+    <span class="title">📝 Crossword Helper</span>
+  </nav>
+
+  <!-- Tabs -->
+  <div class="tabs">
+    <button class="tab active" data-tab="pattern">Pattern Search</button>
+    <button class="tab" data-tab="cryptic">Cryptic Clues</button>
+    <button class="tab" data-tab="anagram">Anagram Solver</button>
+    <button class="tab" data-tab="define">Dictionary</button>
+  </div>
+
+  <!-- Pattern Search Tab -->
+  <section id="tab-pattern" class="tab-content active">
+    <div class="panel">
+      <h2>Pattern Word Search</h2>
+      <p class="hint">Use <code>?</code> for unknown letters and <code>*</code> for any sequence. E.g. <code>c?t</code> → cat, cot, cut</p>
+      <div class="search-row">
+        <input type="text" id="patternInput" placeholder="e.g. ?r??d or c*e" />
+        <input type="number" id="patternLen" placeholder="Length (opt)" min="1" max="30" />
+        <button id="patternSearch" class="btn-primary">Search</button>
+      </div>
+      <div id="patternResults" class="results-area"></div>
+    </div>
+  </section>
+
+  <!-- Cryptic Clues Tab -->
+  <section id="tab-cryptic" class="tab-content">
+    <div class="panel">
+      <h2>Cryptic Clue Helper</h2>
+      <p class="hint">Enter a cryptic clue and the number of letters. The helper will identify the clue type and suggest approaches.</p>
+      <div class="search-row stacked">
+        <textarea id="crypticClue" rows="3" placeholder="Enter the cryptic clue here…"></textarea>
+        <div class="row-inline">
+          <input type="text" id="crypticPattern" placeholder="Pattern (e.g. ???t)" />
+          <input type="number" id="crypticLen" placeholder="Letters" min="1" max="30" />
+          <button id="crypticAnalyse" class="btn-primary">Analyse</button>
+        </div>
+      </div>
+      <div id="crypticResults" class="results-area"></div>
+    </div>
+  </section>
+
+  <!-- Anagram Solver -->
+  <section id="tab-anagram" class="tab-content">
+    <div class="panel">
+      <h2>Anagram Solver</h2>
+      <p class="hint">Enter scrambled letters to find all anagrams and sub-anagrams.</p>
+      <div class="search-row">
+        <input type="text" id="anagramInput" placeholder="e.g. listen" maxlength="15" />
+        <button id="anagramSolve" class="btn-primary">Solve</button>
+      </div>
+      <div id="anagramResults" class="results-area"></div>
+    </div>
+  </section>
+
+  <!-- Dictionary Tab -->
+  <section id="tab-define" class="tab-content">
+    <div class="panel">
+      <h2>Dictionary Lookup</h2>
+      <p class="hint">Look up the definition of any word to verify crossword answers.</p>
+      <div class="search-row">
+        <input type="text" id="defineInput" placeholder="Enter a word…" />
+        <button id="defineSearch" class="btn-primary">Define</button>
+      </div>
+      <div id="defineResults" class="results-area"></div>
+    </div>
+  </section>
+
+  <script src="app.js"></script>
+</body>
+</html>
