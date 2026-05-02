@@ -12,7 +12,7 @@ document.querySelectorAll('.tab').forEach(btn => {
 
 /* ── Utility ── */
 function escHtml(str) {
-  return String(str).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+  return String(str).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
 }
 
 function spinner() {
@@ -27,9 +27,9 @@ document.getElementById('patternSearch').addEventListener('click', runPatternSea
 document.getElementById('patternInput').addEventListener('keydown', e => { if (e.key === 'Enter') runPatternSearch(); });
 
 async function runPatternSearch() {
-  const raw    = document.getElementById('patternInput').value.trim();
-  const len    = parseInt(document.getElementById('patternLen').value) || null;
-  const out    = document.getElementById('patternResults');
+  const raw = document.getElementById('patternInput').value.trim();
+  const len = parseInt(document.getElementById('patternLen').value) || null;
+  const out = document.getElementById('patternResults');
 
   if (!raw) { out.innerHTML = '<p class="no-results">Enter a pattern first.</p>'; return; }
 
@@ -41,7 +41,7 @@ async function runPatternSearch() {
   try {
     // sp= for spelling pattern
     const url = `https://api.datamuse.com/words?sp=${encodeURIComponent(pattern)}&max=100`;
-    const res  = await fetch(url);
+    const res = await fetch(url);
     const data = await res.json();
 
     let words = data.map(d => d.word);
@@ -55,8 +55,8 @@ async function runPatternSearch() {
     out.innerHTML = `
       <p class="result-header">${words.length} word${words.length !== 1 ? 's' : ''} found for pattern <code>${escHtml(raw)}</code>${len ? ` (${len} letters)` : ''}:</p>
       <div class="word-grid">${words.map(w =>
-        `<span class="word-chip" onclick="lookupWord('${escHtml(w)}')">${escHtml(w)}</span>`
-      ).join('')}</div>`;
+      `<span class="word-chip" onclick="lookupWord('${escHtml(w)}')">${escHtml(w)}</span>`
+    ).join('')}</div>`;
   } catch {
     out.innerHTML = '<p class="no-results">Search failed — check your internet connection.</p>';
   }
@@ -77,49 +77,49 @@ document.getElementById('crypticAnalyse').addEventListener('click', analyseCrypt
 // Cryptic clue type indicators
 const CRYPTIC_INDICATORS = {
   anagram: [
-    'mixed','confused','scrambled','muddled','broken','odd','strange','unusual','wild',
-    'upset','disordered','in a mess','badly','wrongly','corrupt','out','shuffled',
-    'changed','rearranged','spinning','drunk','excited','different','new form'
+    'mixed', 'confused', 'scrambled', 'muddled', 'broken', 'odd', 'strange', 'unusual', 'wild',
+    'upset', 'disordered', 'in a mess', 'badly', 'wrongly', 'corrupt', 'out', 'shuffled',
+    'changed', 'rearranged', 'spinning', 'drunk', 'excited', 'different', 'new form'
   ],
   reversal: [
-    'back','backward','reverse','turned','returned','going back','heading back',
-    'about','retreating','recalled','over','reflected','uprising','capsize'
+    'back', 'backward', 'reverse', 'turned', 'returned', 'going back', 'heading back',
+    'about', 'retreating', 'recalled', 'over', 'reflected', 'uprising', 'capsize'
   ],
   hidden: [
-    'part of','inside','within','in','some','contained','held','lurking','hiding',
-    'buried','found in','concealed','discovered in','central','middle'
+    'part of', 'inside', 'within', 'in', 'some', 'contained', 'held', 'lurking', 'hiding',
+    'buried', 'found in', 'concealed', 'discovered in', 'central', 'middle'
   ],
   double: [
-    'two meanings','double','dual'
+    'two meanings', 'double', 'dual'
   ],
   homophone: [
-    'sounds like','heard','aloud','spoken','say','pronounced','reportedly','verbally',
-    'audibly','to the ear','we hear','by the sound of it','it sounds'
+    'sounds like', 'heard', 'aloud', 'spoken', 'say', 'pronounced', 'reportedly', 'verbally',
+    'audibly', 'to the ear', 'we hear', 'by the sound of it', 'it sounds'
   ],
   charade: [
-    'followed by','and then','after','before','then','leads to','joins','plus',
-    'with','next to'
+    'followed by', 'and then', 'after', 'before', 'then', 'leads to', 'joins', 'plus',
+    'with', 'next to'
   ],
   container: [
-    'around','about','outside','surrounding','contains','holding','in','inside',
-    'between','among','within','wrapped','around'
+    'around', 'about', 'outside', 'surrounding', 'contains', 'holding', 'in', 'inside',
+    'between', 'among', 'within', 'wrapped', 'around'
   ],
   deletion: [
-    'without','losing','drops','removed','loses','cut','head off','beheaded',
-    'tailless','endless','curtailed','trim','shortened'
+    'without', 'losing', 'drops', 'removed', 'loses', 'cut', 'head off', 'beheaded',
+    'tailless', 'endless', 'curtailed', 'trim', 'shortened'
   ]
 };
 
 function analyseCryptic() {
-  const clue    = document.getElementById('crypticClue').value.trim();
+  const clue = document.getElementById('crypticClue').value.trim();
   const pattern = document.getElementById('crypticPattern').value.trim();
-  const len     = parseInt(document.getElementById('crypticLen').value) || null;
-  const out     = document.getElementById('crypticResults');
+  const len = parseInt(document.getElementById('crypticLen').value) || null;
+  const out = document.getElementById('crypticResults');
 
   if (!clue) { out.innerHTML = '<p class="no-results">Enter a clue first.</p>'; return; }
 
-  const words   = clue.toLowerCase().split(/\s+/);
-  const found   = {};
+  const words = clue.toLowerCase().split(/\s+/);
+  const found = {};
 
   // Check each indicator list
   Object.entries(CRYPTIC_INDICATORS).forEach(([type, indicators]) => {
@@ -167,7 +167,7 @@ const CRYPTIC_TIPS = {
 };
 
 function buildCrypticCard(type, matches, clue, len) {
-  const labels = { anagram:'Anagram', reversal:'Reversal', hidden:'Hidden Word', double:'Double Definition', homophone:'Homophone', charade:'Charade', container:'Container', deletion:'Deletion' };
+  const labels = { anagram: 'Anagram', reversal: 'Reversal', hidden: 'Hidden Word', double: 'Double Definition', homophone: 'Homophone', charade: 'Charade', container: 'Container', deletion: 'Deletion' };
   return `
     <div class="cryptic-card">
       <h3>${crypticIcon(type)} ${labels[type] || type}</h3>
@@ -177,14 +177,14 @@ function buildCrypticCard(type, matches, clue, len) {
 }
 
 function crypticIcon(type) {
-  const icons = { anagram:'🔀', reversal:'↩️', hidden:'🔍', double:'📖', homophone:'🔊', charade:'🧩', container:'📦', deletion:'✂️' };
+  const icons = { anagram: '🔀', reversal: '↩️', hidden: '🔍', double: '📖', homophone: '🔊', charade: '🧩', container: '📦', deletion: '✂️' };
   return icons[type] || '❓';
 }
 
 async function fetchPatternWords(pattern, len, targetId) {
   try {
     const url = `https://api.datamuse.com/words?sp=${encodeURIComponent(pattern || '*')}&max=50`;
-    const res  = await fetch(url);
+    const res = await fetch(url);
     const data = await res.json();
     let words = data.map(d => d.word);
     if (len) words = words.filter(w => w.length === len);
@@ -209,38 +209,50 @@ async function fetchPatternWords(pattern, len, targetId) {
 document.getElementById('anagramSolve').addEventListener('click', solveAnagram);
 document.getElementById('anagramInput').addEventListener('keydown', e => { if (e.key === 'Enter') solveAnagram(); });
 
+// Word list for anagram solving — fetched once from a public Scrabble dictionary and
+// cached in sessionStorage so subsequent searches are instant.
+let _wordListCache = null;
+
+async function loadWordList() {
+  if (_wordListCache) return _wordListCache;
+  const stored = sessionStorage.getItem('cwh_wordlist');
+  if (stored) { _wordListCache = stored.split('\n'); return _wordListCache; }
+  const res = await fetch('https://raw.githubusercontent.com/redbo/scrabble/master/dictionary.txt');
+  const text = await res.text();
+  _wordListCache = text.split('\n').map(w => w.trim().toLowerCase()).filter(w => /^[a-z]+$/.test(w));
+  try { sessionStorage.setItem('cwh_wordlist', _wordListCache.join('\n')); } catch { /* sessionStorage quota exceeded — skip cache */ }
+  return _wordListCache;
+}
+
 async function solveAnagram() {
-  const letters = document.getElementById('anagramInput').value.trim().toLowerCase().replace(/[^a-z]/g,'');
-  const out     = document.getElementById('anagramResults');
+  const letters = document.getElementById('anagramInput').value.trim().toLowerCase().replace(/[^a-z]/g, '');
+  const out = document.getElementById('anagramResults');
   if (!letters) { out.innerHTML = '<p class="no-results">Enter letters to solve.</p>'; return; }
   if (letters.length > 15) { out.innerHTML = '<p class="no-results">Max 15 letters supported.</p>'; return; }
 
   out.innerHTML = spinner();
+  const sorted = letters.split('').sort().join('');
+  const minLen = Math.min(3, letters.length);
+
   try {
-    // Datamuse anagram endpoint
-    const url = `https://api.datamuse.com/words?sp=${encodeURIComponent(letters)}&max=200`;
-    const res  = await fetch(url);
-    const data = await res.json();
+    const wordList = await loadWordList();
 
-    // Filter to true anagrams of sorted letters
-    const sorted = letters.split('').sort().join('');
-    const anagrams = data
-      .map(d => d.word.toLowerCase().replace(/[^a-z]/g,''))
-      .filter(w => w.split('').sort().join('') === sorted);
+    // Full anagrams: same length, same sorted letters
+    const anagrams = wordList.filter(w =>
+      w.length === letters.length && w.split('').sort().join('') === sorted
+    );
 
-    // Also get sub-anagrams (words using subset of letters)
-    const subWords = data
-      .map(d => d.word.toLowerCase().replace(/[^a-z]/g,''))
-      .filter(w => {
-        if (w.split('').sort().join('') === sorted) return false; // already counted
-        const pool = letters.split('');
-        return w.split('').every(c => {
-          const idx = pool.indexOf(c);
-          if (idx === -1) return false;
-          pool.splice(idx,1);
-          return true;
-        });
+    // Sub-anagrams: shorter words whose letters are all available in the input pool
+    const subWords = wordList.filter(w => {
+      if (w.length >= letters.length || w.length < minLen) return false;
+      const pool = letters.split('');
+      return w.split('').every(c => {
+        const idx = pool.indexOf(c);
+        if (idx === -1) return false;
+        pool.splice(idx, 1);
+        return true;
       });
+    });
 
     let html = '';
     if (anagrams.length) {
@@ -251,8 +263,8 @@ async function solveAnagram() {
     }
     if (subWords.length) {
       html += `<div class="cryptic-card" style="margin-top:14px;">
-        <h3>🔡 Sub-Anagrams using these letters (${Math.min(subWords.length,80)})</h3>
-        <div class="word-grid">${subWords.slice(0,80).map(w => `<span class="word-chip" onclick="lookupWord('${escHtml(w)}')">${escHtml(w)}</span>`).join('')}</div>
+        <h3>🔡 Sub-Anagrams using these letters (${Math.min(subWords.length, 80)})</h3>
+        <div class="word-grid">${subWords.slice(0, 80).map(w => `<span class="word-chip" onclick="lookupWord('${escHtml(w)}')">${escHtml(w)}</span>`).join('')}</div>
       </div>`;
     }
     if (!html) html = '<p class="no-results">No anagrams found for those letters.</p>';
@@ -271,12 +283,12 @@ document.getElementById('defineInput').addEventListener('keydown', e => { if (e.
 
 async function runDefine() {
   const word = document.getElementById('defineInput').value.trim();
-  const out  = document.getElementById('defineResults');
+  const out = document.getElementById('defineResults');
   if (!word) { out.innerHTML = '<p class="no-results">Enter a word to define.</p>'; return; }
   out.innerHTML = spinner();
 
   try {
-    const res  = await fetch(`https://api.dictionaryapi.dev/api/v2/entries/en/${encodeURIComponent(word)}`);
+    const res = await fetch(`https://api.dictionaryapi.dev/api/v2/entries/en/${encodeURIComponent(word)}`);
     if (!res.ok) throw new Error('not_found');
     const data = await res.json();
     out.innerHTML = renderDefinitions(data);
@@ -300,12 +312,12 @@ function renderDefinitions(entries) {
     entry.meanings.forEach((m, mi) => {
       if (mi) html += '<hr class="def-sep">';
       html += `<span class="def-pos">${escHtml(m.partOfSpeech)}</span>`;
-      m.definitions.slice(0,4).forEach(d => {
+      m.definitions.slice(0, 4).forEach(d => {
         html += `<p class="def-meaning">• ${escHtml(d.definition)}</p>`;
         if (d.example) html += `<p class="def-example">"${escHtml(d.example)}"</p>`;
       });
       if (m.synonyms && m.synonyms.length) {
-        html += `<p style="color:#8a7a40;font-size:0.82rem;margin-top:8px;">Synonyms: ${m.synonyms.slice(0,8).map(s => `<span class="word-chip" style="font-size:0.78rem;padding:2px 8px;" onclick="lookupWord('${escHtml(s)}')">${escHtml(s)}</span>`).join(' ')}</p>`;
+        html += `<p style="color:#8a7a40;font-size:0.82rem;margin-top:8px;">Synonyms: ${m.synonyms.slice(0, 8).map(s => `<span class="word-chip" style="font-size:0.78rem;padding:2px 8px;" onclick="lookupWord('${escHtml(s)}')">${escHtml(s)}</span>`).join(' ')}</p>`;
       }
     });
     html += '</div>';

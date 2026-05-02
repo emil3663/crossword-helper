@@ -1,14 +1,21 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Crossword Helper</title>
+  <meta name="theme-color" content="#f6c90e" />
+  <meta name="mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+  <meta name="apple-mobile-web-app-title" content="Crossword" />
+  <link rel="manifest" href="manifest.json" />
   <link rel="stylesheet" href="style.css" />
 </head>
+
 <body>
   <nav class="topbar">
-    <a href="../index.html" class="back">← Hub</a>
     <span class="title">📝 Crossword Helper</span>
   </nav>
 
@@ -24,7 +31,8 @@
   <section id="tab-pattern" class="tab-content active">
     <div class="panel">
       <h2>Pattern Word Search</h2>
-      <p class="hint">Use <code>?</code> for unknown letters and <code>*</code> for any sequence. E.g. <code>c?t</code> → cat, cot, cut</p>
+      <p class="hint">Use <code>?</code> for unknown letters and <code>*</code> for any sequence. E.g. <code>c?t</code>
+        → cat, cot, cut</p>
       <div class="search-row">
         <input type="text" id="patternInput" placeholder="e.g. ?r??d or c*e" />
         <input type="number" id="patternLen" placeholder="Length (opt)" min="1" max="30" />
@@ -38,7 +46,8 @@
   <section id="tab-cryptic" class="tab-content">
     <div class="panel">
       <h2>Cryptic Clue Helper</h2>
-      <p class="hint">Enter a cryptic clue and the number of letters. The helper will identify the clue type and suggest approaches.</p>
+      <p class="hint">Enter a cryptic clue and the number of letters. The helper will identify the clue type and suggest
+        approaches.</p>
       <div class="search-row stacked">
         <textarea id="crypticClue" rows="3" placeholder="Enter the cryptic clue here…"></textarea>
         <div class="row-inline">
@@ -78,5 +87,11 @@
   </section>
 
   <script src="app.js"></script>
+  <script>
+    if ('serviceWorker' in navigator) {
+      navigator.serviceWorker.register('sw.js');
+    }
+  </script>
 </body>
+
 </html>
