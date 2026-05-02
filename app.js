@@ -85,6 +85,12 @@ function getBlockValues(containerId) {
     .map(inp => inp.value.trim().toLowerCase() || '?');
 }
 
+function getFilledBlockWord(containerId, allowGaps = false) {
+  const values = Array.from(document.getElementById(containerId).children).map(inp => inp.value.trim().toLowerCase());
+  if (!allowGaps && values.some(v => !v)) return '';
+  return values.filter(Boolean).join('');
+}
+
 function initLengthSelector(selectId, customId, blocksId, onEnter) {
   const sel = document.getElementById(selectId);
   const custom = document.getElementById(customId);
@@ -159,7 +165,22 @@ async function runPatternSearch() {
 
 window.lookupWord = word => {
   document.querySelector('[data-tab="define"]').click();
-  document.getElementById('defineInput').value = word;
+  const len = String(word.length);
+  const defineSelect = document.getElementById('defineLenSelect');
+  const defineCustom = document.getElementById('defineLenCustom');
+  if ([...defineSelect.options].some(option => option.value === len)) {
+    defineSelect.value = len;
+    defineCustom.style.display = 'none';
+    buildLetterBlocks('defineBlocks', word.length, runDefine);
+  } else {
+    defineSelect.value = 'custom';
+    defineCustom.style.display = '';
+    defineCustom.value = word.length;
+    buildLetterBlocks('defineBlocks', word.length, runDefine);
+  }
+  Array.from(document.querySelectorAll('#defineBlocks .letter-block')).forEach((input, index) => {
+    input.value = word[index] ? word[index].toUpperCase() : '';
+  });
   runDefine();
 };
 
@@ -172,8 +193,7 @@ document.getElementById('crypticClear').addEventListener('click', clearCryptic);
 
 function clearCryptic() {
   document.getElementById('crypticClue').value = '';
-  document.getElementById('crypticPattern').value = '';
-  document.getElementById('crypticLen').value = '';
+  resetLetterBlocks('crypticLenSelect', 'crypticLenCustom', 'crypticBlocks', analyseCryptic);
   document.getElementById('crypticResults').innerHTML = '';
 }
 
@@ -215,8 +235,9 @@ const CRYPTIC_INDICATORS = {
 
 function analyseCryptic() {
   const clue = document.getElementById('crypticClue').value.trim();
-  const pattern = document.getElementById('crypticPattern').value.trim();
-  const len = parseInt(document.getElementById('crypticLen').value) || null;
+  const patternValues = getBlockValues('crypticBlocks');
+  const pattern = patternValues.some(v => v !== '?') ? patternValues.join('') : '';
+  const len = patternValues.length;
   const out = document.getElementById('crypticResults');
 
   if (!clue) { out.innerHTML = '<p class="no-results">Enter a clue first.</p>'; return; }
@@ -471,16 +492,15 @@ async function solveAnagram() {
    ====================================== */
 
 document.getElementById('defineSearch').addEventListener('click', runDefine);
-document.getElementById('defineInput').addEventListener('keydown', e => { if (e.key === 'Enter') runDefine(); });
 document.getElementById('defineClear').addEventListener('click', clearDictionary);
 
 function clearDictionary() {
-  document.getElementById('defineInput').value = '';
+  resetLetterBlocks('defineLenSelect', 'defineLenCustom', 'defineBlocks', runDefine);
   document.getElementById('defineResults').innerHTML = '';
 }
 
 async function runDefine() {
-  const word = document.getElementById('defineInput').value.trim();
+  const word = getFilledBlockWord('defineBlocks');
   const out = document.getElementById('defineResults');
   if (!word) { out.innerHTML = '<p class="no-results">Enter a word to define.</p>'; return; }
   out.innerHTML = spinner();
@@ -525,4 +545,6 @@ function renderDefinitions(entries) {
 
 /* ── Initialise letter-block inputs ── */
 initLengthSelector('patternLenSelect', 'patternLenCustom', 'patternBlocks', runPatternSearch);
+initLengthSelector('crypticLenSelect', 'crypticLenCustom', 'crypticBlocks', analyseCryptic);
 initLengthSelector('anagramLenSelect', 'anagramLenCustom', 'anagramBlocks', solveAnagram);
+initLengthSelector('defineLenSelect', 'defineLenCustom', 'defineBlocks', runDefine);

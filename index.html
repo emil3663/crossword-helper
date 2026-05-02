@@ -80,9 +80,31 @@
         approaches.</p>
       <div class="search-row stacked">
         <textarea id="crypticClue" rows="3" placeholder="Enter the cryptic clue here…"></textarea>
+        <div class="length-row">
+          <label for="crypticLenSelect">Answer length:</label>
+          <select id="crypticLenSelect">
+            <option value="1">1</option>
+            <option value="2">2</option>
+            <option value="3">3</option>
+            <option value="4">4</option>
+            <option value="5" selected>5</option>
+            <option value="6">6</option>
+            <option value="7">7</option>
+            <option value="8">8</option>
+            <option value="9">9</option>
+            <option value="10">10</option>
+            <option value="11">11</option>
+            <option value="12">12</option>
+            <option value="13">13</option>
+            <option value="14">14</option>
+            <option value="15">15</option>
+            <option value="custom">Custom (&gt;15)…</option>
+          </select>
+          <input type="number" id="crypticLenCustom" placeholder="Enter length" min="16" max="50"
+            style="display:none" />
+        </div>
+        <div class="letter-blocks" id="crypticBlocks"></div>
         <div class="row-inline">
-          <input type="text" id="crypticPattern" placeholder="Pattern (e.g. ???t)" />
-          <input type="number" id="crypticLen" placeholder="Letters" min="1" max="30" />
           <button id="crypticAnalyse" class="btn-primary">Analyse</button>
           <button id="crypticClear" class="btn-secondary" type="button">Clear</button>
         </div>
@@ -132,9 +154,31 @@
   <section id="tab-define" class="tab-content">
     <div class="panel">
       <h2>Dictionary Lookup</h2>
-      <p class="hint">Look up the definition of any word to verify crossword answers.</p>
+      <p class="hint">Enter the word one letter per square to look up its definition.</p>
+      <div class="length-row">
+        <label for="defineLenSelect">Word length:</label>
+        <select id="defineLenSelect">
+          <option value="1">1</option>
+          <option value="2">2</option>
+          <option value="3">3</option>
+          <option value="4">4</option>
+          <option value="5" selected>5</option>
+          <option value="6">6</option>
+          <option value="7">7</option>
+          <option value="8">8</option>
+          <option value="9">9</option>
+          <option value="10">10</option>
+          <option value="11">11</option>
+          <option value="12">12</option>
+          <option value="13">13</option>
+          <option value="14">14</option>
+          <option value="15">15</option>
+          <option value="custom">Custom (&gt;15)…</option>
+        </select>
+        <input type="number" id="defineLenCustom" placeholder="Enter length" min="16" max="50" style="display:none" />
+      </div>
+      <div class="letter-blocks" id="defineBlocks"></div>
       <div class="search-row">
-        <input type="text" id="defineInput" placeholder="Enter a word…" />
         <button id="defineSearch" class="btn-primary">Define</button>
         <button id="defineClear" class="btn-secondary" type="button">Clear</button>
       </div>
