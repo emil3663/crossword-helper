@@ -304,13 +304,16 @@ function buildCrypticQueryPhrases(clue) {
   const cleaned = clue.toLowerCase().replace(/[^a-z\s]/g, ' ').replace(/\s+/g, ' ').trim();
   const tokens = cleaned.split(' ').filter(Boolean);
   const phrases = [cleaned];
+  if (tokens.length >= 3) {
+    phrases.push(tokens.slice(0, 3).join(' '));
+    phrases.push(tokens.slice(-3).join(' '));
+  }
   if (tokens.length >= 2) {
     phrases.push(tokens.slice(0, 2).join(' '));
     phrases.push(tokens.slice(-2).join(' '));
   }
-  if (tokens.length >= 1) {
+  if (tokens.length === 1) {
     phrases.push(tokens[0]);
-    phrases.push(tokens[tokens.length - 1]);
   }
   return [...new Set(phrases.filter(p => p.length >= 3))];
 }
@@ -329,13 +332,19 @@ async function fetchCrypticCandidates(clue, pattern, len, targetId) {
   const target = document.getElementById(targetId);
   const clueMap = new Map();
   const patternSet = new Set();
+  const queryPhrases = buildCrypticQueryPhrases(clue);
   const normalizeWord = word => String(word || '').toLowerCase().trim();
   const isEligibleWord = word => /^[a-z]+$/.test(word) && (!len || word.length === len) && matchesWordPattern(word, pattern);
-  const addClueCandidate = (word, score = 0) => {
+  const addClueCandidate = (word, score = 0, sourceId = '') => {
     const w = normalizeWord(word);
     if (!isEligibleWord(w)) return;
     const existing = clueMap.get(w);
-    if (existing == null || score > existing) clueMap.set(w, score);
+    if (!existing) {
+      clueMap.set(w, { score, sources: new Set(sourceId ? [sourceId] : []) });
+      return;
+    }
+    if (score > existing.score) existing.score = score;
+    if (sourceId) existing.sources.add(sourceId);
   };
   const addPatternCandidate = word => {
     const w = normalizeWord(word);
@@ -351,7 +360,7 @@ async function fetchCrypticCandidates(clue, pattern, len, targetId) {
       patternRequest = fetch(`https://api.datamuse.com/words?sp=${encodeURIComponent(pattern)}&max=200`).then(r => r.json());
     }
 
-    for (const phrase of buildCrypticQueryPhrases(clue)) {
+    for (const phrase of queryPhrases) {
       clueRequests.push(fetch(`https://api.datamuse.com/words?ml=${encodeURIComponent(phrase)}&max=60`).then(r => r.json()));
     }
 
@@ -364,7 +373,8 @@ async function fetchCrypticCandidates(clue, pattern, len, targetId) {
     clueResults.forEach((result, index) => {
       if (result.status !== 'fulfilled' || !Array.isArray(result.value)) return;
       const bonus = Math.max(0, 40 - index * 5);
-      result.value.forEach(entry => addClueCandidate(entry.word, (entry.score || 0) + bonus));
+      const sourceId = `q${index}`;
+      result.value.forEach(entry => addClueCandidate(entry.word, (entry.score || 0) + bonus, sourceId));
     });
 
     if (patternRequest) {
@@ -374,7 +384,24 @@ async function fetchCrypticCandidates(clue, pattern, len, targetId) {
       }
     }
 
-    let wordsWithScores = [...clueMap.entries()].map(([word, score]) => ({ word, score }));
+    let wordsWithScores = [...clueMap.entries()].map(([word, data]) => ({
+      word,
+      score: data.score,
+      sourceCount: data.sources.size
+    }));
+
+    if (!pattern) {
+      const requireMultipleSources = queryPhrases.length >= 3;
+      if (requireMultipleSources) {
+        wordsWithScores = wordsWithScores.filter(entry => entry.sourceCount >= 2);
+      }
+      if (wordsWithScores.length) {
+        const topScore = Math.max(...wordsWithScores.map(entry => entry.score));
+        const minScore = Math.max(120, Math.floor(topScore * 0.28));
+        wordsWithScores = wordsWithScores.filter(entry => entry.score >= minScore);
+      }
+    }
+
     if (pattern) {
       wordsWithScores = wordsWithScores.filter(entry => patternSet.has(entry.word));
     }
