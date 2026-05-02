@@ -1,11 +1,23 @@
 # Crossword Helper
 
+Primary access URL (recommended):
+
+- <https://emil3663.github.io/crossword-helper/>
+
 A small static web app for solving crosswords with four tools:
 
 - Pattern search
 - Cryptic clue analysis
 - Anagram solving
 - Dictionary lookup
+
+## Best way to use on phone
+
+1. Open <https://emil3663.github.io/crossword-helper/>
+2. Tap **Install App** (or browser menu -> Add to Home Screen)
+3. Launch from the new phone icon
+
+This works even when the development laptop is turned off.
 
 ## Run locally
 
@@ -38,14 +50,14 @@ If VS Code does not pick the task up immediately, reload the window once and run
 
 ## Phone access
 
-To use the app on your phone:
+To use the app on a phone:
 
 1. Start the local HTTP server on this PC.
 2. Keep the PC and phone on the same Wi-Fi network.
 3. Open `http://192.168.1.17:8000` on the phone.
 4. If Windows Firewall prompts for Python network access, allow it on your private network.
 
-For access outside your home network, deploy the app to a static host such as GitHub Pages, Netlify, or Cloudflare Pages.
+Local access is only for testing. Use the GitHub Pages URL above for normal daily use.
 
 ## Project files
 

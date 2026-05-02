@@ -19,6 +19,34 @@ function spinner() {
   return '<div class="spinner-wrap"><div class="spinner"></div><span>Searching…</span></div>';
 }
 
+/* ── PWA install helpers ── */
+let deferredInstallPrompt = null;
+
+window.addEventListener('beforeinstallprompt', e => {
+  e.preventDefault();
+  deferredInstallPrompt = e;
+  const installBtn = document.getElementById('installApp');
+  if (installBtn) installBtn.hidden = false;
+});
+
+window.addEventListener('appinstalled', () => {
+  const installBtn = document.getElementById('installApp');
+  if (installBtn) installBtn.hidden = true;
+  deferredInstallPrompt = null;
+});
+
+const installBtn = document.getElementById('installApp');
+if (installBtn) {
+  installBtn.addEventListener('click', async () => {
+    if (deferredInstallPrompt) {
+      deferredInstallPrompt.prompt();
+      await deferredInstallPrompt.userChoice;
+      return;
+    }
+    alert('On iPhone: tap Share, then Add to Home Screen.\nOn Android: open browser menu, then Install app / Add to Home screen.');
+  });
+}
+
 /* ── Letter block utilities ── */
 function buildLetterBlocks(containerId, count, onEnter) {
   const container = document.getElementById(containerId);

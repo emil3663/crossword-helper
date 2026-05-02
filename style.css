@@ -42,6 +42,41 @@ body {
   color: #f6c90e;
 }
 
+.topbar-actions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.btn-link,
+.btn-install {
+  border: 1px solid #3a3000;
+  background: #1a1400;
+  color: #f6c90e;
+  border-radius: 8px;
+  padding: 7px 12px;
+  font-size: 0.82rem;
+  font-weight: 700;
+  text-decoration: none;
+}
+
+.btn-install {
+  cursor: pointer;
+}
+
+.btn-link:hover,
+.btn-install:hover {
+  background: #2a2000;
+}
+
+.install-note {
+  max-width: 860px;
+  margin: 10px auto 0;
+  padding: 0 20px;
+  color: #b8a870;
+  font-size: 0.86rem;
+}
+
 /* ── Tabs ── */
 .tabs {
   display: flex;
@@ -342,6 +377,23 @@ code {
   color: #8a7a40;
   text-align: center;
   padding: 30px 0;
+}
+
+@media (max-width: 680px) {
+  .topbar {
+    flex-wrap: wrap;
+    gap: 10px;
+  }
+
+  .topbar-actions {
+    width: 100%;
+  }
+
+  .btn-link,
+  .btn-install {
+    flex: 1;
+    text-align: center;
+  }
 }
 
 /* ================================================================

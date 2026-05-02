@@ -17,7 +17,16 @@
 <body>
   <nav class="topbar">
     <span class="title">📝 Crossword Helper</span>
+    <div class="topbar-actions">
+      <a id="openHosted" class="btn-link" href="https://emil3663.github.io/crossword-helper/" target="_blank"
+        rel="noopener noreferrer">Open Hosted App</a>
+      <button id="installApp" class="btn-install" hidden>Install App</button>
+    </div>
   </nav>
+
+  <div class="install-note" id="installNote">
+    Best for phone use: open the hosted app, then tap Install/Add to Home Screen.
+  </div>
 
   <!-- Tabs -->
   <div class="tabs">
@@ -132,7 +141,7 @@
   <script src="app.js"></script>
   <script>
     if ('serviceWorker' in navigator) {
-      navigator.serviceWorker.register('sw.js');
+      navigator.serviceWorker.register('./sw.js');
     }
   </script>
 </body>
