@@ -234,7 +234,7 @@ code {
   flex-wrap: wrap;
 }
 
-.search-row input[type="text"] {
+.search-row input[type="text"]:not(.letter-block) {
   flex: 2 1 180px;
 }
 
