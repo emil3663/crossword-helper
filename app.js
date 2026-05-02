@@ -397,7 +397,10 @@ async function fetchCrypticCandidates(clue, pattern, len, targetId) {
       }
       if (wordsWithScores.length) {
         const topScore = Math.max(...wordsWithScores.map(entry => entry.score));
-        const minScore = Math.max(120, Math.floor(topScore * 0.28));
+        // Short clues often have one dominant synonym; keep a wider band so close alternates survive.
+        const minScore = queryPhrases.length <= 2
+          ? Math.max(70, Math.floor(topScore * 0.16))
+          : Math.max(120, Math.floor(topScore * 0.28));
         wordsWithScores = wordsWithScores.filter(entry => entry.score >= minScore);
       }
     }
