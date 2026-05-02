@@ -327,49 +327,74 @@ function matchesWordPattern(word, pattern) {
 
 async function fetchCrypticCandidates(clue, pattern, len, targetId) {
   const target = document.getElementById(targetId);
-  const candidateMap = new Map();
-  const addCandidate = (word, score = 0) => {
-    if (!/^[a-z]+$/i.test(word)) return;
-    if (len && word.length !== len) return;
-    if (!matchesWordPattern(word, pattern)) return;
-    const existing = candidateMap.get(word);
-    if (!existing || score > existing.score) candidateMap.set(word, { word, score });
+  const clueMap = new Map();
+  const patternSet = new Set();
+  const normalizeWord = word => String(word || '').toLowerCase().trim();
+  const isEligibleWord = word => /^[a-z]+$/.test(word) && (!len || word.length === len) && matchesWordPattern(word, pattern);
+  const addClueCandidate = (word, score = 0) => {
+    const w = normalizeWord(word);
+    if (!isEligibleWord(w)) return;
+    const existing = clueMap.get(w);
+    if (existing == null || score > existing) clueMap.set(w, score);
+  };
+  const addPatternCandidate = word => {
+    const w = normalizeWord(word);
+    if (!isEligibleWord(w)) return;
+    patternSet.add(w);
   };
 
   try {
-    const requests = [];
+    const clueRequests = [];
+    let patternRequest = null;
+
     if (pattern) {
-      requests.push(fetch(`https://api.datamuse.com/words?sp=${encodeURIComponent(pattern)}&max=80`).then(r => r.json()));
+      patternRequest = fetch(`https://api.datamuse.com/words?sp=${encodeURIComponent(pattern)}&max=200`).then(r => r.json());
     }
+
     for (const phrase of buildCrypticQueryPhrases(clue)) {
-      requests.push(fetch(`https://api.datamuse.com/words?ml=${encodeURIComponent(phrase)}&max=30`).then(r => r.json()));
+      clueRequests.push(fetch(`https://api.datamuse.com/words?ml=${encodeURIComponent(phrase)}&max=60`).then(r => r.json()));
     }
+
     const clueWord = clue.toLowerCase().trim();
     if (/^[a-z]+$/.test(clueWord)) {
-      requests.push(fetch(`https://api.datamuse.com/words?rel_syn=${encodeURIComponent(clueWord)}&max=30`).then(r => r.json()));
+      clueRequests.push(fetch(`https://api.datamuse.com/words?rel_syn=${encodeURIComponent(clueWord)}&max=60`).then(r => r.json()));
     }
 
-    const results = await Promise.allSettled(requests);
-    results.forEach((result, index) => {
+    const clueResults = await Promise.allSettled(clueRequests);
+    clueResults.forEach((result, index) => {
       if (result.status !== 'fulfilled' || !Array.isArray(result.value)) return;
-      const bonus = index === 0 && pattern ? 1000 : 0;
-      result.value.forEach(entry => addCandidate(entry.word, (entry.score || 0) + bonus));
+      const bonus = Math.max(0, 40 - index * 5);
+      result.value.forEach(entry => addClueCandidate(entry.word, (entry.score || 0) + bonus));
     });
 
-    const words = [...candidateMap.values()]
+    if (patternRequest) {
+      const patternResult = await patternRequest.catch(() => null);
+      if (Array.isArray(patternResult)) {
+        patternResult.forEach(entry => addPatternCandidate(entry.word));
+      }
+    }
+
+    let wordsWithScores = [...clueMap.entries()].map(([word, score]) => ({ word, score }));
+    if (pattern) {
+      wordsWithScores = wordsWithScores.filter(entry => patternSet.has(entry.word));
+    }
+
+    const words = wordsWithScores
       .sort((a, b) => b.score - a.score || a.word.localeCompare(b.word))
       .slice(0, 50)
       .map(entry => entry.word);
 
     if (!words.length) {
-      target.innerHTML = '<p class="no-results" style="margin-top:14px;">No matching words found for this clue. Try a pattern, different length, or a shorter definition phrase.</p>';
+      target.innerHTML = pattern
+        ? '<p class="no-results" style="margin-top:14px;">No words found that satisfy clue meaning, length, and pattern together. Try loosening the pattern or rephrasing the clue.</p>'
+        : '<p class="no-results" style="margin-top:14px;">No words found that match this clue and length. Try rephrasing the clue.</p>';
       return;
     }
 
     target.innerHTML = `
       <div class="cryptic-card" style="margin-top:14px;">
         <h3>💡 Possible answers (${words.length})</h3>
-        <p style="margin-bottom:10px;">Suggestions are ranked from the clue meaning, then filtered by length and pattern.</p>
+        <p style="margin-bottom:10px;">Suggestions are ranked by clue meaning and filtered by length${pattern ? ' and your pattern' : ''}.</p>
         <div class="word-grid">${words.map(w => `<span class="word-chip" onclick="lookupWord('${escHtml(w)}')">${escHtml(w)}</span>`).join('')}</div>
       </div>`;
   } catch {
