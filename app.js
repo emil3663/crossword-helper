@@ -97,10 +97,10 @@ function initLengthSelector(selectId, customId, blocksId, onEnter) {
   buildLetterBlocks(blocksId, parseInt(sel.value), onEnter);
   sel.addEventListener('change', () => {
     if (sel.value === 'custom') {
-      custom.style.display = '';
+      custom.hidden = false;
       custom.focus();
     } else {
-      custom.style.display = 'none';
+      custom.hidden = true;
       buildLetterBlocks(blocksId, parseInt(sel.value), onEnter);
     }
   });
@@ -123,7 +123,7 @@ function resetLetterBlocks(selectId, customId, blocksId, onEnter) {
   document.getElementById(selectId).value = '5';
   const custom = document.getElementById(customId);
   custom.value = '';
-  custom.style.display = 'none';
+  custom.hidden = true;
   buildLetterBlocks(blocksId, 5, onEnter);
 }
 
@@ -170,11 +170,11 @@ window.lookupWord = word => {
   const defineCustom = document.getElementById('defineLenCustom');
   if ([...defineSelect.options].some(option => option.value === len)) {
     defineSelect.value = len;
-    defineCustom.style.display = 'none';
+    defineCustom.hidden = true;
     buildLetterBlocks('defineBlocks', word.length, runDefine);
   } else {
     defineSelect.value = 'custom';
-    defineCustom.style.display = '';
+    defineCustom.hidden = false;
     defineCustom.value = word.length;
     buildLetterBlocks('defineBlocks', word.length, runDefine);
   }

@@ -10,6 +10,7 @@
   <meta name="apple-mobile-web-app-capable" content="yes" />
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
   <meta name="apple-mobile-web-app-title" content="Crossword" />
+  <link rel="apple-touch-icon" href="icons/icon-192.png" />
   <link rel="manifest" href="manifest.json" />
   <link rel="stylesheet" href="style.css" />
 </head>
@@ -61,7 +62,7 @@
           <option value="15">15</option>
           <option value="custom">Custom (&gt;15)…</option>
         </select>
-        <input type="number" id="patternLenCustom" placeholder="Enter length" min="16" max="50" style="display:none" />
+        <input type="number" id="patternLenCustom" placeholder="Enter length" min="16" max="50" hidden />
       </div>
       <div class="letter-blocks" id="patternBlocks"></div>
       <div class="search-row">
@@ -100,8 +101,7 @@
             <option value="15">15</option>
             <option value="custom">Custom (&gt;15)…</option>
           </select>
-          <input type="number" id="crypticLenCustom" placeholder="Enter length" min="16" max="50"
-            style="display:none" />
+          <input type="number" id="crypticLenCustom" placeholder="Enter length" min="16" max="50" hidden />
         </div>
         <div class="letter-blocks" id="crypticBlocks"></div>
         <div class="row-inline">
@@ -139,7 +139,7 @@
           <option value="15">15</option>
           <option value="custom">Custom (&gt;15)…</option>
         </select>
-        <input type="number" id="anagramLenCustom" placeholder="Enter length" min="16" max="50" style="display:none" />
+        <input type="number" id="anagramLenCustom" placeholder="Enter length" min="16" max="50" hidden />
       </div>
       <div class="letter-blocks" id="anagramBlocks"></div>
       <div class="search-row">
@@ -175,7 +175,7 @@
           <option value="15">15</option>
           <option value="custom">Custom (&gt;15)…</option>
         </select>
-        <input type="number" id="defineLenCustom" placeholder="Enter length" min="16" max="50" style="display:none" />
+        <input type="number" id="defineLenCustom" placeholder="Enter length" min="16" max="50" hidden />
       </div>
       <div class="letter-blocks" id="defineBlocks"></div>
       <div class="search-row">
@@ -189,7 +189,9 @@
   <script src="app.js"></script>
   <script>
     if ('serviceWorker' in navigator) {
-      navigator.serviceWorker.register('./sw.js');
+      navigator.serviceWorker.register('./sw.js').then(registration => {
+        registration.update();
+      });
     }
   </script>
 </body>

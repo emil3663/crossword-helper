@@ -1,4 +1,4 @@
-const CACHE = 'crossword-helper-v2';
+const CACHE = 'crossword-helper-v3';
 const SHELL = ['index.html', 'app.js', 'style.css', 'manifest.json', 'icons/icon-192.png', 'icons/icon-512.png'];
 
 function withScope(path) {
@@ -20,7 +20,7 @@ self.addEventListener('activate', e => {
     );
 });
 
-// Network-first for API calls; cache-first for the app shell.
+// Network-first for the app shell so new deployments show up quickly.
 self.addEventListener('fetch', e => {
     const url = new URL(e.request.url);
     if (url.hostname === 'api.datamuse.com' || url.hostname === 'api.dictionaryapi.dev') {
@@ -30,7 +30,22 @@ self.addEventListener('fetch', e => {
     if (url.origin !== self.location.origin) {
         return;
     }
-    e.respondWith(
-        caches.match(e.request).then(cached => cached || fetch(e.request))
-    );
+    if (e.request.method !== 'GET') {
+        return;
+    }
+
+    e.respondWith((async () => {
+        const cache = await caches.open(CACHE);
+        try {
+            const fresh = await fetch(e.request);
+            if (fresh && fresh.ok) {
+                cache.put(e.request, fresh.clone());
+            }
+            return fresh;
+        } catch {
+            const cached = await caches.match(e.request);
+            if (cached) return cached;
+            throw new Error('offline');
+        }
+    })());
 });
