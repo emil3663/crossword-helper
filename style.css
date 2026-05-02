@@ -183,6 +183,16 @@ button:hover {
   color: #1a1400;
 }
 
+.btn-secondary {
+  background: transparent;
+  color: #e8e0c0;
+  border: 1px solid #5a4a20;
+}
+
+.btn-secondary:hover {
+  background: rgba(246, 201, 14, 0.08);
+}
+
 code {
   background: rgba(246, 201, 14, 0.15);
   color: #f6c90e;

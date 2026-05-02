@@ -111,6 +111,20 @@ function initLengthSelector(selectId, customId, blocksId, onEnter) {
    ====================================== */
 
 document.getElementById('patternSearch').addEventListener('click', runPatternSearch);
+document.getElementById('patternClear').addEventListener('click', clearPatternSearch);
+
+function resetLetterBlocks(selectId, customId, blocksId, onEnter) {
+  document.getElementById(selectId).value = '5';
+  const custom = document.getElementById(customId);
+  custom.value = '';
+  custom.style.display = 'none';
+  buildLetterBlocks(blocksId, 5, onEnter);
+}
+
+function clearPatternSearch() {
+  resetLetterBlocks('patternLenSelect', 'patternLenCustom', 'patternBlocks', runPatternSearch);
+  document.getElementById('patternResults').innerHTML = '';
+}
 
 async function runPatternSearch() {
   const values = getBlockValues('patternBlocks');
@@ -154,6 +168,14 @@ window.lookupWord = word => {
    ====================================== */
 
 document.getElementById('crypticAnalyse').addEventListener('click', analyseCryptic);
+document.getElementById('crypticClear').addEventListener('click', clearCryptic);
+
+function clearCryptic() {
+  document.getElementById('crypticClue').value = '';
+  document.getElementById('crypticPattern').value = '';
+  document.getElementById('crypticLen').value = '';
+  document.getElementById('crypticResults').innerHTML = '';
+}
 
 // Cryptic clue type indicators
 const CRYPTIC_INDICATORS = {
@@ -227,13 +249,8 @@ function analyseCryptic() {
     });
   }
 
-  // If pattern/length given, also fetch word suggestions
-  if (pattern || len) {
-    out.innerHTML = html + '<div id="crypticWordResults">' + spinner() + '</div>';
-    fetchPatternWords(pattern || (len ? '?'.repeat(len) : ''), len, 'crypticWordResults');
-  } else {
-    out.innerHTML = html;
-  }
+  out.innerHTML = html + '<div id="crypticWordResults">' + spinner() + '</div>';
+  fetchCrypticCandidates(clue, pattern, len, 'crypticWordResults');
 }
 
 const CRYPTIC_TIPS = {
@@ -262,6 +279,83 @@ function crypticIcon(type) {
   return icons[type] || '❓';
 }
 
+function buildCrypticQueryPhrases(clue) {
+  const cleaned = clue.toLowerCase().replace(/[^a-z\s]/g, ' ').replace(/\s+/g, ' ').trim();
+  const tokens = cleaned.split(' ').filter(Boolean);
+  const phrases = [cleaned];
+  if (tokens.length >= 2) {
+    phrases.push(tokens.slice(0, 2).join(' '));
+    phrases.push(tokens.slice(-2).join(' '));
+  }
+  if (tokens.length >= 1) {
+    phrases.push(tokens[0]);
+    phrases.push(tokens[tokens.length - 1]);
+  }
+  return [...new Set(phrases.filter(p => p.length >= 3))];
+}
+
+function matchesWordPattern(word, pattern) {
+  if (!pattern) return true;
+  const regex = new RegExp(`^${pattern
+    .toLowerCase()
+    .replace(/[.+^${}()|[\]\\]/g, '\\$&')
+    .replace(/\?/g, '.')
+    .replace(/\*/g, '.*')}$`);
+  return regex.test(word.toLowerCase());
+}
+
+async function fetchCrypticCandidates(clue, pattern, len, targetId) {
+  const target = document.getElementById(targetId);
+  const candidateMap = new Map();
+  const addCandidate = (word, score = 0) => {
+    if (!/^[a-z]+$/i.test(word)) return;
+    if (len && word.length !== len) return;
+    if (!matchesWordPattern(word, pattern)) return;
+    const existing = candidateMap.get(word);
+    if (!existing || score > existing.score) candidateMap.set(word, { word, score });
+  };
+
+  try {
+    const requests = [];
+    if (pattern) {
+      requests.push(fetch(`https://api.datamuse.com/words?sp=${encodeURIComponent(pattern)}&max=80`).then(r => r.json()));
+    }
+    for (const phrase of buildCrypticQueryPhrases(clue)) {
+      requests.push(fetch(`https://api.datamuse.com/words?ml=${encodeURIComponent(phrase)}&max=30`).then(r => r.json()));
+    }
+    const clueWord = clue.toLowerCase().trim();
+    if (/^[a-z]+$/.test(clueWord)) {
+      requests.push(fetch(`https://api.datamuse.com/words?rel_syn=${encodeURIComponent(clueWord)}&max=30`).then(r => r.json()));
+    }
+
+    const results = await Promise.allSettled(requests);
+    results.forEach((result, index) => {
+      if (result.status !== 'fulfilled' || !Array.isArray(result.value)) return;
+      const bonus = index === 0 && pattern ? 1000 : 0;
+      result.value.forEach(entry => addCandidate(entry.word, (entry.score || 0) + bonus));
+    });
+
+    const words = [...candidateMap.values()]
+      .sort((a, b) => b.score - a.score || a.word.localeCompare(b.word))
+      .slice(0, 50)
+      .map(entry => entry.word);
+
+    if (!words.length) {
+      target.innerHTML = '<p class="no-results" style="margin-top:14px;">No matching words found for this clue. Try a pattern, different length, or a shorter definition phrase.</p>';
+      return;
+    }
+
+    target.innerHTML = `
+      <div class="cryptic-card" style="margin-top:14px;">
+        <h3>💡 Possible answers (${words.length})</h3>
+        <p style="margin-bottom:10px;">Suggestions are ranked from the clue meaning, then filtered by length and pattern.</p>
+        <div class="word-grid">${words.map(w => `<span class="word-chip" onclick="lookupWord('${escHtml(w)}')">${escHtml(w)}</span>`).join('')}</div>
+      </div>`;
+  } catch {
+    target.innerHTML = '<p class="no-results" style="margin-top:14px;">Could not fetch word suggestions.</p>';
+  }
+}
+
 async function fetchPatternWords(pattern, len, targetId) {
   try {
     const url = `https://api.datamuse.com/words?sp=${encodeURIComponent(pattern || '*')}&max=50`;
@@ -288,6 +382,12 @@ async function fetchPatternWords(pattern, len, targetId) {
    ====================================== */
 
 document.getElementById('anagramSolve').addEventListener('click', solveAnagram);
+document.getElementById('anagramClear').addEventListener('click', clearAnagram);
+
+function clearAnagram() {
+  resetLetterBlocks('anagramLenSelect', 'anagramLenCustom', 'anagramBlocks', solveAnagram);
+  document.getElementById('anagramResults').innerHTML = '';
+}
 
 // Word list for anagram solving — fetched once from a public Scrabble dictionary and
 // cached in sessionStorage so subsequent searches are instant.
@@ -372,6 +472,12 @@ async function solveAnagram() {
 
 document.getElementById('defineSearch').addEventListener('click', runDefine);
 document.getElementById('defineInput').addEventListener('keydown', e => { if (e.key === 'Enter') runDefine(); });
+document.getElementById('defineClear').addEventListener('click', clearDictionary);
+
+function clearDictionary() {
+  document.getElementById('defineInput').value = '';
+  document.getElementById('defineResults').innerHTML = '';
+}
 
 async function runDefine() {
   const word = document.getElementById('defineInput').value.trim();
