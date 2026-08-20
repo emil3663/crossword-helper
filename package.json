@@ -1,0 +1,30 @@
+{
+  "name": "crossword-helper",
+  "version": "1.0.0",
+  "description": "Pattern search, cryptic clue analyser, anagram solver and dictionary for crossword puzzles.",
+  "main": "www/app.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/emil3663/crossword-helper.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "type": "commonjs",
+  "bugs": {
+    "url": "https://github.com/emil3663/crossword-helper/issues"
+  },
+  "homepage": "https://github.com/emil3663/crossword-helper#readme",
+  "dependencies": {
+    "@capacitor-community/speech-recognition": "^7.0.1",
+    "@capacitor/android": "^8.4.1",
+    "@capacitor/cli": "^8.4.1",
+    "@capacitor/core": "^8.4.1"
+  },
+  "devDependencies": {
+    "@capacitor/assets": "^3.0.5"
+  }
+}

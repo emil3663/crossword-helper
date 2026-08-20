@@ -1,0 +1,7 @@
+<?xml version='1.0' encoding='utf-8'?>
+<resources>
+    <string name="app_name">Crossword Helper</string>
+    <string name="title_activity_main">Crossword Helper</string>
+    <string name="package_name">com.emil3663.crosswordhelper</string>
+    <string name="custom_url_scheme">com.emil3663.crosswordhelper</string>
+</resources>

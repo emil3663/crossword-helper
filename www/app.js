@@ -47,6 +47,37 @@ if (installBtn) {
   });
 }
 
+/* ── Text-to-speech (spoken answers) ── */
+// Off by default: spoken audio must be an explicit opt-in, not an autoplay
+// surprise (also avoids App Store review friction around auto-playing audio).
+const SPEECH_PREF_KEY = 'cwh_speech_enabled';
+let speechEnabled = localStorage.getItem(SPEECH_PREF_KEY) === '1';
+
+function speak(text) {
+  if (!speechEnabled || !text || !('speechSynthesis' in window)) return;
+  window.speechSynthesis.cancel();
+  const utterance = new SpeechSynthesisUtterance(text);
+  utterance.lang = 'en-US';
+  window.speechSynthesis.speak(utterance);
+}
+
+const speechToggleBtn = document.getElementById('speechToggle');
+function updateSpeechToggleUI() {
+  if (!speechToggleBtn) return;
+  speechToggleBtn.textContent = speechEnabled ? '🔊' : '🔇';
+  speechToggleBtn.setAttribute('aria-pressed', String(speechEnabled));
+  speechToggleBtn.title = speechEnabled ? 'Spoken answers: on (tap to mute)' : 'Spoken answers: off (tap to unmute)';
+}
+if (speechToggleBtn) {
+  updateSpeechToggleUI();
+  speechToggleBtn.addEventListener('click', () => {
+    speechEnabled = !speechEnabled;
+    localStorage.setItem(SPEECH_PREF_KEY, speechEnabled ? '1' : '0');
+    if (!speechEnabled && 'speechSynthesis' in window) window.speechSynthesis.cancel();
+    updateSpeechToggleUI();
+  });
+}
+
 /* ── Letter block utilities ── */
 function buildLetterBlocks(containerId, count, onEnter) {
   const container = document.getElementById(containerId);
@@ -195,6 +226,70 @@ function clearCryptic() {
   document.getElementById('crypticClue').value = '';
   resetLetterBlocks('crypticLenSelect', 'crypticLenCustom', 'crypticBlocks', analyseCryptic);
   document.getElementById('crypticResults').innerHTML = '';
+  const micStatus = document.getElementById('crypticMicStatus');
+  if (micStatus) micStatus.textContent = '';
+}
+
+/* ── Voice input (speak a clue instead of typing it) ──
+   Uses the native SpeechRecognition plugin bridge, not the unreliable
+   browser SpeechRecognition API. window.Capacitor.Plugins is injected
+   automatically by the native runtime — no bundler/import required. */
+const isNativeApp = !!(window.Capacitor && window.Capacitor.isNativePlatform && window.Capacitor.isNativePlatform());
+const SpeechRecognitionPlugin = isNativeApp ? window.Capacitor.Plugins.SpeechRecognition : null;
+
+const crypticMicBtn = document.getElementById('crypticMicBtn');
+const crypticMicStatus = document.getElementById('crypticMicStatus');
+
+if (crypticMicBtn) {
+  if (SpeechRecognitionPlugin) {
+    crypticMicBtn.hidden = false;
+    crypticMicBtn.addEventListener('click', startCrypticVoiceInput);
+  } else {
+    crypticMicBtn.hidden = true;
+  }
+}
+
+async function startCrypticVoiceInput() {
+  if (!SpeechRecognitionPlugin || crypticMicBtn.disabled) return;
+  crypticMicStatus.textContent = '';
+
+  try {
+    let perm = await SpeechRecognitionPlugin.checkPermissions();
+    if (perm.speechRecognition !== 'granted') {
+      perm = await SpeechRecognitionPlugin.requestPermissions();
+    }
+    if (perm.speechRecognition !== 'granted') {
+      crypticMicStatus.textContent = 'Microphone permission denied — enable it in system settings to use voice input.';
+      return;
+    }
+
+    crypticMicBtn.disabled = true;
+    crypticMicBtn.classList.add('listening');
+    crypticMicStatus.textContent = 'Listening…';
+
+    const result = await SpeechRecognitionPlugin.start({
+      language: 'en-US',
+      maxResults: 1,
+      prompt: 'Say the clue',
+      popup: false,
+      partialResults: false
+    });
+
+    const transcript = result?.matches?.[0];
+    if (!transcript) {
+      crypticMicStatus.textContent = 'No speech detected — try again.';
+      return;
+    }
+
+    document.getElementById('crypticClue').value = transcript;
+    crypticMicStatus.textContent = `Heard: "${transcript}"`;
+    analyseCryptic();
+  } catch {
+    crypticMicStatus.textContent = 'Voice input failed — check microphone permissions and try again.';
+  } finally {
+    crypticMicBtn.disabled = false;
+    crypticMicBtn.classList.remove('listening');
+  }
 }
 
 // Cryptic clue type indicators
@@ -565,6 +660,7 @@ async function runDefine() {
     if (!res.ok) throw new Error('not_found');
     const data = await res.json();
     out.innerHTML = renderDefinitions(data);
+    speak(buildSpokenDefinition(data));
   } catch (err) {
     if (err.message === 'not_found') {
       out.innerHTML = `<p class="no-results">No definition found for "<strong>${escHtml(word)}</strong>". Check spelling.</p>`;
@@ -596,6 +692,13 @@ function renderDefinitions(entries) {
     html += '</div>';
   });
   return html;
+}
+
+function buildSpokenDefinition(entries) {
+  const entry = entries[0];
+  if (!entry) return '';
+  const definition = entry.meanings?.[0]?.definitions?.[0]?.definition;
+  return definition ? `${entry.word}. ${definition}` : entry.word;
 }
 
 /* ── Initialise letter-block inputs ── */

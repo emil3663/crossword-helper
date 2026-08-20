@@ -31,3 +31,17 @@ Date: 2026-05-02
 - The app is usable as a standalone static site.
 - Serving it over HTTP is the best path for phone testing on the same Wi-Fi network.
 - No automated tests were added in this pass.
+
+## Native app / voice smoke checks (added — not yet run)
+
+The app now also ships as a Capacitor-wrapped native Android app (`android/`), with
+spoken definitions (text-to-speech) and voice input for cryptic clues. These require
+a native build to verify — see TEST_PLAN.md §3.5 for the full manual case list. Not
+run yet in this environment: this machine has no Android SDK/emulator and no macOS
+(iOS is out of scope for now — see README for platform status). Before shipping:
+
+- Run `npx cap open android` on a machine with Android Studio installed, launch on an
+  emulator or device, and step through TEST_PLAN.md §3.5 (VS-01 through VS-10).
+- Confirm the speech toggle default is OFF on first launch (no autoplay audio).
+- Confirm the mic button on the Cryptic tab only appears inside the native app, not
+  when the same `www/` build is opened in a regular browser or via GitHub Pages.

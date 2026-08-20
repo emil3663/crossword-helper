@@ -35,6 +35,8 @@ All word data is fetched live from free public APIs (Datamuse, Free Dictionary A
 | Phonetic transcription | ✅ Done | Shown when available |
 | Part-of-speech grouping | ✅ Done | noun, verb, adjective… |
 | Synonym chips (click to define) | ✅ Done | |
+| Spoken definitions (text-to-speech) | ✅ Done | Web Speech Synthesis API; muted by default, toggle in topbar |
+| Voice input for cryptic clues | ✅ Done | Native app only, via `@capacitor-community/speech-recognition`; mic button hidden in browser |
 | Offline / no-internet fallback | ❌ Not done | API-dependent |
 | Saved word lists | ❌ Not done | No persistence yet |
 | Crossword grid builder | ❌ Not done | Visual grid not implemented |
@@ -100,6 +102,21 @@ All word data is fetched live from free public APIs (Datamuse, Free Dictionary A
 | DC-05 | Click synonym chip | Looks up that word | ⬜ |
 | DC-06 | Press Enter | Same as clicking Define | ⬜ |
 | DC-07 | API offline | "Lookup failed" message | ⬜ |
+
+### 3.5 Voice & Speech (native app builds)
+
+| ID | Test | Expected Result | Status |
+|----|------|-----------------|--------|
+| VS-01 | Tap speech toggle (🔇→🔊) in topbar | Icon flips to 🔊, `aria-pressed` true, preference persists across reload | ⬜ |
+| VS-02 | With speech ON, look up a word (Dictionary tab) | Word + first definition spoken aloud via device TTS | ⬜ |
+| VS-03 | With speech OFF (default), look up a word | No audio plays | ⬜ |
+| VS-04 | Tap speech toggle while an utterance is playing | Playback stops immediately (`speechSynthesis.cancel()`) | ⬜ |
+| VS-05 | Fresh install, before muting | No audio plays automatically anywhere in the app (opt-in only, no autoplay) | ⬜ |
+| VS-06 | Open app in a desktop/mobile browser (not the native app) | 🎤 mic button on Cryptic tab is hidden; rest of app unaffected | ⬜ |
+| VS-07 | In native app, tap 🎤 and grant mic/speech permission when prompted | Button shows "Listening…" state, then transcribed text fills the clue box and Analyse runs automatically | ⬜ |
+| VS-08 | In native app, tap 🎤 and deny permission | Status text explains permission was denied and how to fix it in system settings; app remains usable | ⬜ |
+| VS-09 | In native app, tap 🎤 and stay silent | Status text shows "No speech detected — try again."; no crash | ⬜ |
+| VS-10 | In native app, tap 🎤, speak a clue, then tap Clear | Clue box, results, and mic status line all reset together | ⬜ |
 
 ---
 

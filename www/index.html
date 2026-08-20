@@ -22,6 +22,8 @@
       <span class="version-badge" aria-label="App version">vee9ebae</span>
     </div>
     <div class="topbar-actions">
+      <button id="speechToggle" class="btn-icon" type="button" aria-pressed="false"
+        title="Spoken answers: off (tap to unmute)">🔇</button>
       <a id="openHosted" class="btn-link" href="https://emil3663.github.io/crossword-helper/" target="_blank"
         rel="noopener noreferrer">Open Hosted App</a>
       <button id="installApp" class="btn-install" hidden>Install App</button>
@@ -106,7 +108,9 @@
         <div class="row-inline">
           <button id="crypticAnalyse" class="btn-primary">Analyse</button>
           <button id="crypticClear" class="btn-secondary" type="button">Clear</button>
+          <button id="crypticMicBtn" class="btn-secondary" type="button" hidden>🎤 Speak Clue</button>
         </div>
+        <p id="crypticMicStatus" class="mic-status" aria-live="polite"></p>
       </div>
       <div id="crypticResults" class="results-area"></div>
     </div>

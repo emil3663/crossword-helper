@@ -21,18 +21,20 @@ This works even when the development laptop is turned off.
 
 ## Run locally
 
-This project has no build step and no package manager setup. It is a plain HTML/CSS/JavaScript app.
+The web app itself has no build step — it's plain HTML/CSS/JavaScript living in `www/`.
+(`package.json` and `node_modules/` exist only to drive the Capacitor native wrapper
+described below.)
 
 ### Option 1: Open directly
 
-Open `index.html` in a browser.
+Open `www/index.html` in a browser.
 
 ### Option 2: Serve it over HTTP
 
 From the project folder:
 
 ```powershell
-py -m http.server 8000 --bind 0.0.0.0
+py -m http.server 8000 --bind 0.0.0.0 --directory www
 ```
 
 Then open:
@@ -61,11 +63,20 @@ Local access is only for testing. Use the GitHub Pages URL above for normal dail
 
 ## Project files
 
-- `index.html` contains the UI structure.
-- `app.js` contains all client-side logic.
-- `style.css` contains the styling.
+- `www/index.html` contains the UI structure.
+- `www/app.js` contains all client-side logic, including text-to-speech and voice input.
+- `www/style.css` contains the styling.
+- `www/manifest.json`, `www/sw.js`, `www/icons/` are the PWA manifest, service worker, and app icons.
 - `TEST_PLAN.md` contains the manual test matrix and roadmap.
 - `SMOKE_TEST.md` contains the latest manual smoke-test results.
+- `capacitor.config.json`, `android/` are the native Android app wrapper (via Capacitor). Run
+  `npx cap sync android` after changing anything under `www/`, then `npx cap open android` to
+  build/run in Android Studio.
+- `assets/icon.png` is the 1024x1024 source icon; `generate_icons.py` regenerates it and the
+  PWA icons, then `npx capacitor-assets generate --android` regenerates all native icon/splash
+  sizes from it.
+- iOS is not currently wrapped (this repo has been developed on Windows, where Xcode/iOS builds
+  aren't possible). The web app and Android wrapper are otherwise unaffected.
 
 ## API dependencies
 
@@ -75,3 +86,11 @@ The app depends on public APIs:
 - Free Dictionary API for definitions
 
 Without internet access, lookups will fail.
+
+## Voice features (native app)
+
+The Android app can speak dictionary definitions aloud (muted by default — tap the 🔇/🔊
+button in the top bar) and accepts spoken cryptic clues via a 🎤 button on the Cryptic tab.
+Voice input requires the native app; the mic button stays hidden when running as a plain
+website or installed PWA, since it depends on the native Capacitor speech-recognition plugin
+rather than the browser's SpeechRecognition API.

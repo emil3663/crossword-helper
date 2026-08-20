@@ -10,7 +10,9 @@
 				"http.server",
 				"8000",
 				"--bind",
-				"0.0.0.0"
+				"0.0.0.0",
+				"--directory",
+				"www"
 			],
 			"isBackground": true,
 			"group": "build"
