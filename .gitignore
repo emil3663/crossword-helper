@@ -9,3 +9,5 @@ ios/App/Pods/
 ios/App/build/
 ios/App/App/public/
 .DS_Store
+.claude/
+.vscode/
